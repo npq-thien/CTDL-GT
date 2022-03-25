@@ -110,7 +110,6 @@ class RedBlackTree:
                     self.right_rotate(x.parent)
                     x = self.root
         x.color = 0
-        self.coordinate()
 
     def __rb_transplant(self, u, v):
         if u.parent is None:
@@ -160,7 +159,6 @@ class RedBlackTree:
             y.left = z.left
             y.left.parent = y
             y.color = z.color
-        self.coordinate()
         if y_original_color == 0:
             self.delete_fix(x)
 
@@ -198,7 +196,6 @@ class RedBlackTree:
                     self.right_rotate(k.parent.parent)
             if k == self.root:
                 break
-        self.coordinate()
         self.root.color = 0
         
 
@@ -324,7 +321,6 @@ class RedBlackTree:
 
         if node.parent is None:
             node.color = 0
-            self.coordinate()
             return
 
         if node.parent.parent is None:
@@ -364,6 +360,7 @@ class RedBlackTree:
 
     def get_list_node(self):
         nodes = []
+        self.coordinate()
         self.list_node(self.root, nodes)
         return nodes
     def coordinate(self):

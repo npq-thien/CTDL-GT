@@ -23,16 +23,16 @@ day = "day"
 err = 'error'
 nodes = []
 forest = []
-step = -1
+step = 0
 
 def step_to_step():
     global step
-    if step > len(forest) - 1:
-        step = len(forest) - 1 
-        return 
     c.delete(ALL)
-    step += 1
     visualize(forest[step])
+    step += 1
+    if step > len(forest) - 1:
+        step -= 1 
+        return 
     c.after(2000, step_to_step)
 
 def check_input(ar):
@@ -122,17 +122,23 @@ def print_tree():
                          text=keys, font=('Roboto', 20), fill='black', tag=day, justify='center')
 
 
-def skip_back(step):
+def skip_back():
+    global step
+    global forest
     step -= 1
-    if len(forest) == 1 or step == 0:
+    if len(forest) == 1 or step == -1:
         return
+    c.delete(ALL)
     visualize(forest[step])
 
 
-def skip_forward(step):
+def skip_forward():
+    global step
+    global forest
     step += 1
     if len(forest) == 1 or step == len(forest):
         return
+    c.delete(ALL)
     visualize(forest[step])
 
 def visualize(nodes):
@@ -140,10 +146,10 @@ def visualize(nodes):
         if i.item != 0:
             if i.parent != None:
                 if i.parent.left == i:
-                    create_edge(i.parent.pos[0] - radius, i.parent.pos[1],
+                    create_edge(i.parent.pos[0] - radius +3, i.parent.pos[1]+10,
                                 i.pos[0] + radius, i.pos[1])
                 else:
-                    create_edge(i.parent.pos[0] + radius, i.parent.pos[1],
+                    create_edge(i.parent.pos[0] + radius - 3, i.parent.pos[1]+10,
                                 i.pos[0] - radius, i.pos[1])
             create_node(i.pos, i.color, f"{i.item}")
 
@@ -192,12 +198,12 @@ main.pack()
 
 # add skipback button
 skipback = Button(main, text='Skip Back', highlightbackground='#000000',
-                  highlightthickness=0, bg='#000000', fg='#ffffff', command=lambda: skip_back(step))
+                  highlightthickness=0, bg='#000000', fg='#ffffff', command=skip_back)
 skipback.place(x=window_width//2-50, y=985)
 
 # add skipforward button
 skipforward = Button(main, text='Skip Forward', highlightbackground='#000000',
-                     highlightthickness=0, bg='#000000', fg='#ffffff', command=lambda: skip_forward(step))
+                     highlightthickness=0, bg='#000000', fg='#ffffff', command=skip_forward)
 skipforward.place(x=window_width//2+50, y=985)
 
 c = Canvas(main, width=canvas_width, height=canvas_height, bg='white')
