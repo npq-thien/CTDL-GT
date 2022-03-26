@@ -21,19 +21,43 @@ radius = 20
 
 day = "day"
 err = 'error'
+vr = 'verify'
 nodes = []
 forest = []
 step = 0
+flag = 0
+rbt = RBT.RedBlackTree()
 
-def step_to_step():
+
+# def step_to_step():
+#     global step
+#     global flag
+#     global forest
+#     c.delete(ALL)
+#     visualize(forest[flag])
+#     if flag == len(forest) -1:
+#         step = flag
+#         return
+#     flag += 1
+
+#     c.after(2000, step_to_step)
+
+def step_to_step() :
     global step
-    c.delete(ALL)
-    visualize(forest[step])
-    step += 1
-    if step > len(forest) - 1:
-        step -= 1 
-        return 
+    global flag
+    global forest
+    for i in forest[flag]:
+        print(i.get_key(), i.get())
+    print('\n')
+    # c.delete(ALL)
+    # visualize(forest[flag])
+    if flag == len(forest) - 1:
+        step = flag
+        return
+    flag += 1
+
     c.after(2000, step_to_step)
+
 
 def check_input(ar):
     for i in ar:
@@ -46,31 +70,21 @@ def check_input(ar):
     return 0
 
 
-def copy_tree(rbt, rbt_c):
-    rbt_c = RBT.RedBlackTree()
-    nodes = rbt.get_list_node()
-    # print(nodes)
-    rbt_c = RBT.RedBlackTree()
-    for i in nodes:
-        rbt_c.insert(i)
-    # print(f"\n{rbt_c.get_list_node()}")
-
-
 def insert_tree():
     # c.delete(day)
     global forest
+    global rbt
     ar_split = box.get().split(',')
     if check_input(ar_split) == 0:
         box.delete(0, END)
         for i in ar_split:
             # nodes.append([f'o{i}', f'l{i}'])
             rbt.insert(int(i))
-            forest.append(rbt.get_list_node())
+            forest.append(rbt.get_coordinates())
             # print(f"{forest[-1]}")
         step_to_step()
     print(ar_split)
-    print(f"{forest}")
-
+    # print(f"{forest}")
 
 
 def delete_tree():
@@ -91,6 +105,11 @@ def delete_tree():
             notion.after(3000, notion.delete, err)
         else:
             rbt.delete_node(int(i))
+            verify = f"Deleted node {i}"
+            # tag = f"err{line}"
+            notion.create_text(100, 20 + line * 20, text=verify,
+                               font=f, fill='black', tag=vr, justify='left')
+            notion.after(3000, notion.delete, vr)
             forest.append(rbt.get_list_node())
     step_to_step()
     print(ar_split)
@@ -125,9 +144,9 @@ def print_tree():
 def skip_back():
     global step
     global forest
-    step -= 1
-    if len(forest) == 1 or step == -1:
+    if step <= 0:
         return
+    step -= 1
     c.delete(ALL)
     visualize(forest[step])
 
@@ -135,23 +154,24 @@ def skip_back():
 def skip_forward():
     global step
     global forest
-    step += 1
-    if len(forest) == 1 or step == len(forest):
+    if step >= len(forest) - 1:
         return
+    step += 1
+
     c.delete(ALL)
     visualize(forest[step])
 
+
 def visualize(nodes):
     for i in nodes:
-        if i.item != 0:
-            if i.parent != None:
-                if i.parent.left == i:
-                    create_edge(i.parent.pos[0] - radius +3, i.parent.pos[1]+10,
-                                i.pos[0] + radius, i.pos[1])
-                else:
-                    create_edge(i.parent.pos[0] + radius - 3, i.parent.pos[1]+10,
-                                i.pos[0] - radius, i.pos[1])
-            create_node(i.pos, i.color, f"{i.item}")
+        if i.side != 'm':
+            if i.side == 'l':
+                create_edge(i.pos0[0] - radius + 3, i.pos0[1] + 10,
+                            i.pos1[0] + radius, i.pos1[1])
+            else:
+                create_edge(i.pos0[0] + radius - 3, i.pos0[1] + 10,
+                            i.pos1[0] - radius, i.pos1[1])
+        create_node(i.pos1, i.color, f"{i.key}")
 
 
 # def create_node(x,y, r = radius, color='black', text='null'):
@@ -166,7 +186,7 @@ def create_node(pos, color=0, text='null'):
     cor = x - r, y - r, x + r, y + r
     o_tag = 'o' + text
     l_tag = 'l' + text
-    c.create_oval(cor, fill=colors[color], outline='black', width=2, tag=o_tag)
+    c.create_oval(cor, fill=colors[color], outline='black', width=3, tag=o_tag)
     c.create_text(pos, text=text, font=f, fill='white',
                   justify='center', tag=l_tag)
     # nodes.append([o_tag, l_tag])
@@ -175,8 +195,6 @@ def create_node(pos, color=0, text='null'):
 def create_edge(x0, y0, x1, y1, color='black'):
     c.create_line(x0, y0, x1, y1, fill=color, width=3)
 
-
-rbt = RBT.RedBlackTree()
 
 root = Tk()
 root.title("Red Black Tree Visualization")
@@ -199,22 +217,21 @@ main.pack()
 # add skipback button
 skipback = Button(main, text='Skip Back', highlightbackground='#000000',
                   highlightthickness=0, bg='#000000', fg='#ffffff', command=skip_back)
-skipback.place(x=window_width//2-50, y=985)
+skipback.place(x=window_width // 2 - 50, y=985)
 
 # add skipforward button
 skipforward = Button(main, text='Skip Forward', highlightbackground='#000000',
                      highlightthickness=0, bg='#000000', fg='#ffffff', command=skip_forward)
-skipforward.place(x=window_width//2+50, y=985)
+skipforward.place(x=window_width // 2 + 50, y=985)
 
 c = Canvas(main, width=canvas_width, height=canvas_height, bg='white')
 c.pack(padx=40, pady=40, fill=BOTH, expand=True)
 
 fr_bg = '#FEC515'
 
-
 notion = Canvas(c, width=200, height=300, bg='#B1D149',
                 highlightthickness=0)  # B1D149
-notion.place(x=1400-8, y=635)
+notion.place(x=1400 - 8, y=635)
 
 # control panel
 fr = Frame(c, width=150, height=172, bg=fr_bg)
