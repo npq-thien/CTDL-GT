@@ -1,5 +1,4 @@
 # Implementing Red-Black Tree in Python
-# team 4
 
 
 import sys
@@ -41,6 +40,11 @@ class coord:
 
     def get_key(self):
         return self.key
+
+    def equal(self, other):
+        return self.pos0 == other.pos0 and self.pos1 == other.pos1 and self.color == other.color and self.key == other.key and self.side == other.side
+
+
 class RedBlackTree:
     def __init__(self):
         self.NULL = Node(0)
@@ -49,7 +53,7 @@ class RedBlackTree:
         self.NULL.right = None
         self.NULL.pos = [0, 0]
         self.root = self.NULL
-        self.forest  = []
+        self.forest = []
 
     # Preorder
     def pre_order_helper(self, node):
@@ -87,12 +91,17 @@ class RedBlackTree:
             if x == x.parent.left:
                 s = x.parent.right
                 if s.color == 1:
-                    s.color = 0
-                    x.parent.color = 1
-                    self.forest.append(self.get_coordinates())
+                    # s.color = 0
+                    # x.parent.color = 1
+                    t1 = s
+                    t2 = x.parent
                     self.left_rotate(x.parent)
                     self.forest.append(self.get_coordinates())
+                    t1.color = 0
+                    t2.color = 1
                     s = x.parent.right
+                    self.forest.append(self.get_coordinates())
+
 
                 if s.left.color == 0 and s.right.color == 0:
                     s.color = 1
@@ -100,30 +109,42 @@ class RedBlackTree:
                     self.forest.append(self.get_coordinates())
                 else:
                     if s.right.color == 0:
-                        s.left.color = 0
-                        s.color = 1
-                        self.forest.append(self.get_coordinates())
+                        # s.left.color = 0
+                        # s.color = 1
+                        t1 = s.left
+                        t2 = s
                         self.right_rotate(s)
                         self.forest.append(self.get_coordinates())
+                        t1.color = 0
+                        t2.color = 1
                         s = x.parent.right
-
+                        self.forest.append(self.get_coordinates())
                     s.color = x.parent.color
-                    x.parent.color = 0
-                    s.right.color = 0
-                    self.forest.append(self.get_coordinates())
+                    # x.parent.color = 0
+                    # s.right.color = 0
+                    t1 = x.parent
+                    t2 = s.right
                     self.left_rotate(x.parent)
+                    t1.parent.color = 0
                     self.forest.append(self.get_coordinates())
-                    
+                    t1.parent.color = 1
+                    t1.color = 0
+                    t2.color = 0
                     x = self.root
+                    self.forest.append(self.get_coordinates())
             else:
                 s = x.parent.left
                 if s.color == 1:
-                    s.color = 0
-                    x.parent.color = 1
-                    self.forest.append(self.get_coordinates())
+                    # s.color = 0
+                    # x.parent.color = 1
+                    t1 = s
+                    t2 = x.parent
                     self.right_rotate(x.parent)
                     self.forest.append(self.get_coordinates())
+                    t1.color = 0
+                    t2.color = 1
                     s = x.parent.left
+                    self.forest.append(self.get_coordinates())
 
                 if s.right.color == 0 and s.left.color == 0:
                     s.color = 1
@@ -131,24 +152,34 @@ class RedBlackTree:
                     self.forest.append(self.get_coordinates())
                 else:
                     if s.left.color == 0:
-                        s.right.color = 0
-                        s.color = 1
-                        self.forest.append(self.get_coordinates())
+                        # s.right.color = 0
+                        # s.color = 1
+                        t1 = s.right
+                        t2 = s
                         self.left_rotate(s)
                         self.forest.append(self.get_coordinates())
-                      
+                        t1.color = 0
+                        t2.color = 1
                         s = x.parent.left
-
+                        self.forest.append(self.get_coordinates())
+                    # left left rotation
                     s.color = x.parent.color
-                    x.parent.color = 0
-                    s.left.color = 0
-                    self.forest.append(self.get_coordinates())
+                    # x.parent.color = 0
+                    # s.left.color = 0
+                    t1 = x.parent
+                    t2 = s.left
                     self.right_rotate(x.parent)
+                    t1.parent.color = 0
                     self.forest.append(self.get_coordinates())
-                    
+                    t1.parent.color = 1
+                    t1.color = 0
+                    t2.color = 0
                     x = self.root
-        x.color = 0
-        self.forest.append(self.get_coordinates())
+                    self.forest.append(self.get_coordinates())
+        if x.color == 1:
+            x.color = 0
+            self.forest.append(self.get_coordinates())
+
 
     def __rb_transplant(self, u, v):
         if u.parent is None:
@@ -158,7 +189,6 @@ class RedBlackTree:
         else:
             u.parent.right = v
         v.parent = u.parent
-        self.forest.append(self.get_coordinates())
 
     # Node deletion
     def delete_node_helper(self, node, key):
@@ -214,17 +244,17 @@ class RedBlackTree:
                     k.parent.color = 0
                     k.parent.parent.color = 1
                     k = k.parent.parent
-                    self.forest.append(self.get_coordinates())
                 else:
                     if k == k.parent.left:
                         k = k.parent
                         self.right_rotate(k)
                         self.forest.append(self.get_coordinates())
-                    k.parent.color = 0
-                    k.parent.parent.color = 1
-                    self.forest.append(self.get_coordinates())
+                    t1 = k.parent
+                    t2 = k.parent.parent
                     self.left_rotate(k.parent.parent)
                     self.forest.append(self.get_coordinates())
+                    t1.color = 0
+                    t2.color = 1
             else:
                 u = k.parent.parent.right
 
@@ -233,21 +263,23 @@ class RedBlackTree:
                     k.parent.color = 0
                     k.parent.parent.color = 1
                     k = k.parent.parent
-                    self.forest.append(self.get_coordinates())
                 else:
                     if k == k.parent.right:
                         k = k.parent
                         self.left_rotate(k)
                         self.forest.append(self.get_coordinates())
-                    k.parent.color = 0
-                    k.parent.parent.color = 1
-                    self.forest.append(self.get_coordinates())
+                    t1 = k.parent
+                    t2 = k.parent.parent
                     self.right_rotate(k.parent.parent)
                     self.forest.append(self.get_coordinates())
+                    t1.color = 0
+                    t2.color = 1
+            self.forest.append(self.get_coordinates())
             if k == self.root:
                 break
-        self.root.color = 0
-        self.forest.append(self.get_coordinates())
+        if self.root.color == 1:
+            self.root.color = 0
+            self.forest.append(self.get_coordinates())
 
     # Printing the tree
     def __print_helper(self, node, indent, last):
@@ -315,6 +347,7 @@ class RedBlackTree:
         if y.left != self.NULL:
             y.left.parent = x
 
+
         y.parent = x.parent
         if x.parent is None:
             self.root = y
@@ -330,6 +363,7 @@ class RedBlackTree:
         x.left = y.right
         if y.right != self.NULL:
             y.right.parent = x
+
 
         y.parent = x.parent
         if x.parent is None:
@@ -414,42 +448,36 @@ class RedBlackTree:
             # Recursively place the other nodes and edges
             def add_nodes(node, gap, nodes, coords):
                 if node.left and node.left.item != 0:  # if left subtree: position node to left of parent
-                    new_coord = [coords[0] - gap , coords[1] + 4*radius]
+                    new_coord = [coords[0] - gap, coords[1] + 4 * radius]
                     node.left.pos = new_coord
-                    node2 = coord(coords, new_coord, node.left.color,node.left.item, 'l')
+                    node2 = coord(coords, new_coord, node.left.color, node.left.item, 'l')
                     nodes.append(node2)
                     # recurse on left subtree
-                    add_nodes(node.left, gap//2, nodes, new_coord)
+                    add_nodes(node.left, gap // 2, nodes, new_coord)
 
                 if node.right and node.right.item != 0:  # if right subtree: position node to right of parent
-                    new_coord = [coords[0] + gap , coords[1] + 4*radius]
+                    new_coord = [coords[0] + gap, coords[1] + 4 * radius]
                     node.right.pos = new_coord
-                    node3 = coord(coords, new_coord, node.right.color,node.right.item, 'r')
+                    node3 = coord(coords, new_coord, node.right.color, node.right.item, 'r')
                     nodes.append(node3)
                     # recurse on right subtree
-                    add_nodes(node.right, gap//2, nodes, new_coord)
+                    add_nodes(node.right, gap // 2, nodes, new_coord)
 
-            add_nodes(self.root,18 * radius , list_coords, root_coord)
+            add_nodes(self.root, 18 * radius, list_coords, root_coord)
         return list_coords
 
     def get_coordinates(self):
         return self.coordinates([])
-    
+
     def get_forest(self):
-                   
+
         return self.forest
 
 
 if __name__ == "__main__":
     bst = RedBlackTree()
 
-    rbt.insert(10)
-    rbt.insert(55)
-    rbt.insert(40)
-    rbt.insert(65)
-    rbt.insert(60)
-    rbt.insert(75)
-    rbt.insert(57)
+    keys = ['13', '9', '5']
     # for i in keys:
     #     bst.insert(int(i))
     #     node = bst.get_coordinates()
@@ -460,6 +488,4 @@ if __name__ == "__main__":
     # bst.insert(75)
     # bst.insert(57)
 
-    bst.print_tree()
-
-    
+    # bst.print_tree()
